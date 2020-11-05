@@ -123,8 +123,6 @@ def process_line(line):
 
 for i, line in enumerate(sc_raw_exp):
     sc_genes, d = process_line(line)
-    #print(type(sc_genes))
-    #print(dir(sc_genes))
     train_data[i] = sc_genes
 
 print(train_data)   
