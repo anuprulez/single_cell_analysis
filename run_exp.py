@@ -31,21 +31,24 @@ with open(obs_names_path, "r") as obs_file:
     for row in obs_read:
         obs_names.append(row[0])
         
+print("Reading raw data...")
         
 andata = sc.read(data_path) 
 andata = andata.transpose()
-
-
 
 andata.var_names = var_names
 andata.var_names_make_unique()
 andata.obs_names = obs_names
 andata.obs_names_make_unique()
 
+print("Writing processed data...")
+
 andata.write(filename=output_h5ad_path)
 
 
 # filtering 
+
+print("Filtering raw data...")
 
 min_cells = 3,
 min_genes = 10
@@ -66,7 +69,8 @@ genes_count = sc_raw.shape[1]
 print("Cells number is %d , with %d genes per cell."
       % (cells_count, genes_count))
       
-      
+print("Scaling raw data...")
+
 # scaling
 scale = "normalize_per_cell_LS_20000"
 
@@ -93,14 +97,19 @@ print("Scaling of the data is done using " + scale["scaling"]
       + " with " + str(scale["scale_value"]))
       
 
+print("Saving processed data...")
+
 output_h5ad_processed_file = "68kPBMCs_processed.h5ad"
 output_h5ad_processed_path = os.path.join(dataset_dir, output_h5ad_processed_file)
 sc_raw.write(output_h5ad_processed_path)
+
 
 sct = collections.namedtuple('sc', ('barcode', 'count_no', 'genes_no'))
 exp_share = 0.2
 n_exp_data = int(exp_share * sc_raw.shape[0])
 sc_raw_exp = sc_raw[:n_exp_data]
+
+print("Creating training data...")
 
 train_data = np.zeros((sc_raw_exp.shape[0], sc_raw_exp.shape[1]))
 
@@ -114,6 +123,9 @@ def process_line(line):
 
 for i, line in enumerate(sc_raw_exp):
     sc_genes, d = process_line(line)
+    #print(type(sc_genes))
+    #print(dir(sc_genes))
     train_data[i] = sc_genes
-    
 
+print(train_data)   
+print(train_data.shape)
