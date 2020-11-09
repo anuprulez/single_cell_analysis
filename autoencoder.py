@@ -50,10 +50,11 @@ class SCAutoEncoder(nn.Module):
         encoder_features = self.encoder(features)
         decoder_features = self.decoder(encoder_features)
         return decoder_features
-        
+
     def setup_training(self, input_data, test_data):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         dataloader = DataLoader(input_data, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
         model = SCAutoEncoder(input_shape=self.input_shape).to(device)
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -71,6 +72,6 @@ class SCAutoEncoder(nn.Module):
                 loss += train_loss.item()
             loss = loss / len(dataloader)
             print("epoch : {}/{}, loss = {:.4f}".format(epoch + 1, epochs, loss))
-        p_data = self.encoder(test_data)
-        #print(p_data, batch_size=batch_size)
-        print(dir(p_data))
+        for te_d in test:
+            p_data = self.encoder.forward(torch.tensor(np.array(te_d)))
+            print(p_data)
