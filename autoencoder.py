@@ -3,55 +3,58 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader
 import torchvision
+
 
 seed = 42
 torch.manual_seed(seed)
-torch.backends.cudnn.benchmark = False
-torch.backends.cudnn.deterministic = True
+#torch.backends.cudnn.benchmark = False
+#torch.backends.cudnn.deterministic = True
 
-batch_size = 512
-epochs = 20
-learning_rate = 1e-3
+batch_size = 32
+epochs = 10
+learning_rate = 1e-4
+bottleneck_size = 2
+encoder_output_size = 32
+decoder_output_size = 32
 
+torch.set_default_tensor_type('torch.DoubleTensor')
 
 class SCAutoEncoder(nn.Module):
     def __init__(self, **kwargs):
         super().__init__()
-        self.encoder_hidden_layer = nn.Linear(
-            in_features=kwargs["input_shape"], out_features=128
+        
+        self.input_shape = kwargs["input_shape"]
+        self.encoder = nn.Sequential(
+            nn.Linear(self.input_shape, encoder_output_size),
+            nn.ReLU(True),
+            nn.Linear(encoder_output_size, 16),
+            nn.ReLU(True),
+            nn.Linear(16, 8),
+            nn.ReLU(True),
+            nn.Linear(8, 2)
         )
-        self.encoder_output_layer = nn.Linear(
-            in_features=128, out_features=128
-        )
-        self.decoder_hidden_layer = nn.Linear(
-            in_features=128, out_features=128
-        )
-        self.decoder_output_layer = nn.Linear(
-            in_features=128, out_features=kwargs["input_shape"]
+        self.decoder = nn.Sequential(
+            nn.Linear(2, 8),
+            nn.ReLU(True),
+            nn.Linear(8, 16),
+            nn.ReLU(True),
+            nn.Linear(16, 32),
+            nn.ReLU(True),
+            nn.Linear(decoder_output_size, self.input_shape), 
+            nn.Tanh()
         )
 
     def forward(self, features):
-        activation = self.encoder_hidden_layer(features)
-        activation = torch.relu(activation)
-        code = self.encoder_output_layer(activation)
-        code = torch.sigmoid(code)
-        activation = self.decoder_hidden_layer(code)
-        activation = torch.relu(activation)
-        activation = self.decoder_output_layer(activation)
-        reconstructed = torch.sigmoid(activation)
-        return reconstructed
+        encoder_features = self.encoder(features)
+        decoder_features = self.decoder(encoder_features)
+        return decoder_features
         
-    def setup_training(input_shape):
-        #  use gpu if available
+    def setup_training(self, input_data, test_data):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        # create a model from `AE` autoencoder class
-        # load it to the specified device, either gpu or cpu
-        model = SCAutoEncoder(input_shape=input_shape).to(device)
-
-        # create an optimizer object
-        # Adam optimizer with learning rate 1e-3
+        dataloader = DataLoader(input_data, batch_size=batch_size, shuffle=True)
+        model = SCAutoEncoder(input_shape=self.input_shape).to(device)
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
         # mean-squared error loss
@@ -59,32 +62,15 @@ class SCAutoEncoder(nn.Module):
 
         for epoch in range(epochs):
             loss = 0
-            for batch_features, _ in train_loader:
-                # reshape mini-batch data to [N, 784] matrix
-                # load it to the active device
-                batch_features = batch_features.view(-1, input_shape).to(device)
-        
-                # reset the gradients back to zero
-                # PyTorch accumulates gradients on subsequent backward passes
+            for batch_features in dataloader:
                 optimizer.zero_grad()
-        
-                # compute reconstructions
                 outputs = model(batch_features)
-        
-                # compute training reconstruction loss
                 train_loss = criterion(outputs, batch_features)
-        
-                # compute accumulated gradients
                 train_loss.backward()
-        
-                # perform parameter update based on current gradients
                 optimizer.step()
-        
-                # add the mini-batch training loss to epoch loss
                 loss += train_loss.item()
-    
-            # compute the epoch training loss
-            loss = loss / len(train_loader)
-    
-            # display the epoch training loss
-            print("epoch : {}/{}, recon loss = {:.8f}".format(epoch + 1, epochs, loss))
+            loss = loss / len(dataloader)
+            print("epoch : {}/{}, loss = {:.4f}".format(epoch + 1, epochs, loss))
+        p_data = self.encoder(test_data)
+        #print(p_data, batch_size=batch_size)
+        print(dir(p_data))
