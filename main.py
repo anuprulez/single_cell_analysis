@@ -1,4 +1,3 @@
-
 import os
 import sys
 
@@ -19,7 +18,7 @@ class SCA(object):
         
     def train_ae(self, input_data, test_data):
         i_shape = input_data.shape[1]
-        ae = autoencoder.SCAutoEncoder(input_shape=i_shape).setup_training(input_data, test_data)
+        ae = autoencoder.SCAutoEncoder(input_dim=i_shape).train_model(input_data, test_data)
 
 if __name__ == "__main__":
 
