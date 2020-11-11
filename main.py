@@ -3,6 +3,7 @@ import sys
 
 import numpy as np
 import autoencoder
+import filter_sc
 
 
 class SCA(object):
@@ -10,6 +11,13 @@ class SCA(object):
     """
     def __init__(self, dim):
         self.dim = dim
+        
+    def filter_sc(self, **kwargs):
+        sc = filter_sc.FilterSC(**kwargs)
+        sc.read_files()
+        sc.filter_single_cell()
+        tr_data, te_data = sc.create_train_data()
+        return tr_data, te_data
        
     def get_data(self):
         generated_data = np.random.randn(self.dim[0], self.dim[1])
@@ -24,5 +32,9 @@ if __name__ == "__main__":
 
     init_dim = (1000, 96)
     sca = SCA(init_dim)
-    tr_data, te_data = sca.get_data()
-    sca.train_ae(tr_data, te_data)
+    
+    # filter single-cell data
+    tr_data, te_data = sca.filter_sc(mtx_file="matrix.mtx", genes_file="genes.tsv", obs_file="barcodes.tsv", h5ad_file="68kPBMCs.h5ad")
+    
+    #tr_data, te_data = sca.get_data()
+    #sca.train_ae(tr_data, te_data)
