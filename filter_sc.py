@@ -71,30 +71,27 @@ class FilterSC(object):
         train_data = np.zeros((n_split, dimensions))
         test_data = np.zeros((samples - n_split, dimensions))
 
-        for i, line in enumerate(self.sc_data):
-            sc_genes = __process_line(line)
+        for i, row in enumerate(self.sc_data):
+            #sc_genes = row.X #self.__process_line(line)
             if i > n_split:
-                train_data[i] = sc_genes
+                train_data[i] = row.X
             else:
-                 test_data[i] = sc_genes
+                 test_data[i] = row.X
             if i > samples:
                 break
         print(train_data.shape)
         print(test_data.shape)
 
-    def __process_line(line):
-        '''
+        return train_data, test_data
+        '''def __process_line(self, line):
+        
         sct = collections.namedtuple('sc', ('barcode', 'count_no', 'genes_no'))
         scmd = sct(barcode=line.obs_names[0],
                count_no=int(np.sum(line.X)),
                genes_no=line.obs['n_genes'][0]
               )
-        '''
-        return line.X
-
-
-
-
+        
+        return line.X'''
 
 
 '''dataset_dir = "data/"
