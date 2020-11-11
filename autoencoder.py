@@ -76,7 +76,7 @@ class Decoder(nn.Module):
 
 class SCAutoEncoder(nn.Module):
     """
-    Merge encoder and decoder network
+    Merge encoder and decoder networks
     """
     def __init__(self, **kwargs):
         super(SCAutoEncoder, self).__init__()
