@@ -118,12 +118,8 @@ class SCAutoEncoder(nn.Module):
         test_loader = DataLoader(test_data, batch_size=test_data.shape[0], shuffle=True)
         for te_d in test_loader:
             p_data = self.encoder.forward(torch.tensor(np.array(te_d)).to(DEVICE))
-            print(p_data)
-            print(dir(p_data))
             self.save_results(p_data.detach().tolist())
             
     def save_results(self, pred_results, output_file="data/output.csv"):
-        #res_np = pred_results.numpy()
         dataframe = pd.DataFrame(pred_results)
         dataframe.to_csv(output_file, sep="\t", header=False, index=False, index_label=False)
-        #np.savetxt(output_file, pred_results.detach().numpy(), delimiter='')
