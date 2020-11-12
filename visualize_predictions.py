@@ -36,7 +36,6 @@ if __name__ == "__main__":
 
     scVis = SCVisualise()
 
-    # filter single-cell data
     data = scVis.get_features("data/output.csv")
     
     scVis.plot_TSNE(data)

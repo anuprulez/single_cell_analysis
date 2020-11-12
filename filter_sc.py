@@ -1,4 +1,5 @@
 import os
+import sys
 import csv
 import collections
 import numpy as np
@@ -15,6 +16,13 @@ class FilterSC(object):
         self.genes = list()
         self.obs_names = list()
         self.sc_data = None
+
+    def check_processed_file(self, processed_path):
+        try:
+            self.sc_data = sc.read(os.path.join(self.dataset_dir, processed_path))
+            return True
+        except Exception as ex:
+            return False
 
     def read_files(self):
         with open(self.genes_file_path, "r") as gene_file:
@@ -49,7 +57,7 @@ class FilterSC(object):
 
         print("Cells number is %d , with %d genes per cell."
             % (cells_count, genes_count))
-      
+
         print("Scaling raw data...")
         # scaling
         sc.pp.normalize_per_cell(self.sc_data, counts_per_cell_after=lib_size)
@@ -61,7 +69,7 @@ class FilterSC(object):
 
     def create_train_data(self):
         split_share = 0.2
-        samples = 20 # self.sc_data.shape[0]
+        samples = 20000 # self.sc_data.shape[0]
         dimensions = self.sc_data.shape[1]
         n_split = int(split_share * samples)
 
@@ -70,14 +78,19 @@ class FilterSC(object):
         train_data = np.zeros((samples - n_split, dimensions))
         test_data = np.zeros((n_split, dimensions))
 
+        j = 0
+        k = 0
         for i, row in enumerate(self.sc_data):
-            if i < n_split:
-                test_data[i:] = row.X.toarray()
-            else:
-                 train_data[i:] = row.X.toarray()
-            if i > samples:
+            df = row.to_df()
+            df_list = df.values.tolist()
+            if i >= samples:
                 break
-
+            if i < n_split:
+                test_data[j] = df_list[0]
+                j += 1
+            else:
+                train_data[k] = df_list[0]
+                k += 1
         print("train data size: ({0}, {1})".format(train_data.shape[0], train_data.shape[1]))
         print("test data size: ({0}, {1})".format(test_data.shape[0], test_data.shape[1]))
 

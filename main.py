@@ -11,8 +11,10 @@ class SCA(object):
     """
     def filter_sc(self, **kwargs):
         sc = filter_sc.FilterSC(**kwargs)
-        sc.read_files()
-        sc.filter_single_cell()
+        sc_data = sc.check_processed_file(kwargs["processed_file"])
+        if not sc_data:
+            sc.read_files()
+            sc.filter_single_cell()
         tr_data, te_data = sc.create_train_data()
         return tr_data, te_data
        
@@ -32,7 +34,8 @@ if __name__ == "__main__":
     sca = SCA()
 
     # filter single-cell data
-    tr_data, te_data = sca.filter_sc(mtx_file="matrix.mtx", genes_file="genes.tsv", obs_file="barcodes.tsv", h5ad_file="68kPBMCs.h5ad")
+    
+    tr_data, te_data = sca.filter_sc(mtx_file="matrix.mtx", genes_file="genes.tsv", obs_file="barcodes.tsv", h5ad_file="68kPBMCs.h5ad", processed_file= "68kPBMCs_processed.h5ad")
     
     #tr_data, te_data = sca.get_data()
     sca.train_ae(tr_data, te_data)
