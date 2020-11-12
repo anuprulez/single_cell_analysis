@@ -10,8 +10,8 @@ import torchvision
 
 seed = 42
 torch.manual_seed(seed)
-#torch.backends.cudnn.benchmark = False
-#torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
 
 batch_size = 32
 epochs = 10
@@ -21,7 +21,7 @@ encoder_output_size = 32
 decoder_output_size = 32
 
 torch.set_default_tensor_type('torch.DoubleTensor')
-
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Encoder(nn.Module):
     """
@@ -29,16 +29,16 @@ class Encoder(nn.Module):
     to project original data to a lower dimension
     """
     def __init__(self, input_dimensions):
-        super(Encoder, self).__init__()
-        
+        super(Encoder, self).__init__() 
         self.input_dim = input_dimensions
-        self.input_layer = nn.Linear(in_features=self.input_dim, out_features=encoder_output_size)
+        self.input_layer = nn.Linear(in_features=self.input_dim, out_features=encoder_output_size).to(DEVICE)
         self.relu = nn.ReLU(True)
-        self.encoder_h1 = nn.Linear(encoder_output_size, 16)
-        self.encoder_h2 = nn.Linear(16, 8)
-        self.bottleneck_layer = nn.Linear(8, 2)
+        self.encoder_h1 = nn.Linear(encoder_output_size, 16).to(DEVICE)
+        self.encoder_h2 = nn.Linear(16, 8).to(DEVICE)
+        self.bottleneck_layer = nn.Linear(8, 2).to(DEVICE)
         
     def forward(self, x):
+        x = x.cuda()
         input_o = self.input_layer(x)
         input_relu = self.relu(input_o)
         h1_o = self.encoder_h1(input_relu)
@@ -65,6 +65,7 @@ class Decoder(nn.Module):
         self.decoded_layer = nn.Linear(32, self.input_dim)
 
     def forward(self, x):
+        x = x.to(DEVICE)
         decoder_b = self.bottleneck_layer(x)
         b_relu = self.relu(decoder_b)
         h1_o = self.decoder_h1(b_relu)
@@ -86,15 +87,15 @@ class SCAutoEncoder(nn.Module):
         self.decoder = Decoder(self.input_dim)
 
     def forward(self, features):
+        features = features.to(DEVICE)
         encoded_features = self.encoder(features)
         reconstructed_features = self.decoder(encoded_features)
         return reconstructed_features
 
     def train_model(self, input_data, test_data):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         dataloader = DataLoader(input_data, batch_size=batch_size, shuffle=True)
-
-        model = SCAutoEncoder(input_dim=self.input_dim).to(device)
+        model = SCAutoEncoder(input_dim=self.input_dim).to(DEVICE)
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
         # mean-squared error loss
@@ -105,8 +106,10 @@ class SCAutoEncoder(nn.Module):
             loss = 0
             for batch_features in dataloader:
                 optimizer.zero_grad()
-                outputs = model(batch_features)
-                train_loss = criterion(outputs, batch_features)
+                batch_features = batch_features.to(DEVICE)
+                outputs = model(batch_features).to(DEVICE)
+                outputs = outputs.to(DEVICE)
+                train_loss = criterion(outputs, batch_features).to(DEVICE)
                 train_loss.backward()
                 optimizer.step()
                 loss += train_loss.item()
@@ -115,8 +118,12 @@ class SCAutoEncoder(nn.Module):
         # load test data
         test_loader = DataLoader(test_data, batch_size=test_data.shape[0], shuffle=True)
         for te_d in test_loader:
-            p_data = self.encoder.forward(torch.tensor(np.array(te_d)))
+            #te_d = torch.tensor(te_d).cuda()
+            print(te_d)
+            
+            p_data = self.encoder.forward(torch.tensor(np.array(te_d)).cuda())
             print(p_data)
+            print(dir(p_data))
             self.save_results(p_data)
             
     def save_results(self, pred_results, output_file="data/output.csv"):
