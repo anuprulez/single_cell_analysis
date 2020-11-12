@@ -38,7 +38,7 @@ class Encoder(nn.Module):
         self.bottleneck_layer = nn.Linear(8, 2).to(DEVICE)
         
     def forward(self, x):
-        x = x.cuda()
+        x = x.to(DEVICE)
         input_o = self.input_layer(x)
         input_relu = self.relu(input_o)
         h1_o = self.encoder_h1(input_relu)
@@ -93,7 +93,6 @@ class SCAutoEncoder(nn.Module):
         return reconstructed_features
 
     def train_model(self, input_data, test_data):
-        #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         dataloader = DataLoader(input_data, batch_size=batch_size, shuffle=True)
         model = SCAutoEncoder(input_dim=self.input_dim).to(DEVICE)
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -118,16 +117,13 @@ class SCAutoEncoder(nn.Module):
         # load test data
         test_loader = DataLoader(test_data, batch_size=test_data.shape[0], shuffle=True)
         for te_d in test_loader:
-            #te_d = torch.tensor(te_d).cuda()
-            print(te_d)
-            
-            p_data = self.encoder.forward(torch.tensor(np.array(te_d)).cuda())
+            p_data = self.encoder.forward(torch.tensor(np.array(te_d)).to(DEVICE))
             print(p_data)
             print(dir(p_data))
-            self.save_results(p_data)
+            self.save_results(p_data.detach().tolist())
             
     def save_results(self, pred_results, output_file="data/output.csv"):
-        res_np = pred_results.detach().numpy()
-        dataframe = pd.DataFrame(res_np)
+        #res_np = pred_results.numpy()
+        dataframe = pd.DataFrame(pred_results)
         dataframe.to_csv(output_file, sep="\t", header=False, index=False, index_label=False)
         #np.savetxt(output_file, pred_results.detach().numpy(), delimiter='')
