@@ -9,9 +9,6 @@ import filter_sc
 class SCA(object):
     """ 
     """
-    def __init__(self, dim):
-        self.dim = dim
-        
     def filter_sc(self, **kwargs):
         sc = filter_sc.FilterSC(**kwargs)
         sc.read_files()
@@ -30,9 +27,10 @@ class SCA(object):
 
 if __name__ == "__main__":
 
-    init_dim = (1000, 96)
-    sca = SCA(init_dim)
+    #init_dim = (1000, 96)
     
+    sca = SCA()
+
     # filter single-cell data
     tr_data, te_data = sca.filter_sc(mtx_file="matrix.mtx", genes_file="genes.tsv", obs_file="barcodes.tsv", h5ad_file="68kPBMCs.h5ad")
     

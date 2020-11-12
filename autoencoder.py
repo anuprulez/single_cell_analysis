@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 import torch
 import torch.nn as nn
@@ -99,6 +100,7 @@ class SCAutoEncoder(nn.Module):
         # mean-squared error loss
         criterion = nn.MSELoss()
 
+        print("Start training...")
         for epoch in range(epochs):
             loss = 0
             for batch_features in dataloader:
@@ -111,7 +113,14 @@ class SCAutoEncoder(nn.Module):
             loss = loss / len(dataloader)
             print("epoch : {}/{}, loss = {:.4f}".format(epoch + 1, epochs, loss))
         # load test data
-        test_loader = DataLoader(test_data, batch_size=1, shuffle=True)
+        test_loader = DataLoader(test_data, batch_size=test_data.shape[0], shuffle=True)
         for te_d in test_loader:
             p_data = self.encoder.forward(torch.tensor(np.array(te_d)))
             print(p_data)
+            self.save_results(p_data)
+            
+    def save_results(self, pred_results, output_file="data/output.csv"):
+        res_np = pred_results.detach().numpy()
+        dataframe = pd.DataFrame(res_np)
+        dataframe.to_csv(output_file, sep="\t", header=False, index=False, index_label=False)
+        #np.savetxt(output_file, pred_results.detach().numpy(), delimiter='')

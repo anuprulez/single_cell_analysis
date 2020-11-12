@@ -16,7 +16,6 @@ class FilterSC(object):
         self.obs_names = list()
         self.sc_data = None
 
-
     def read_files(self):
         with open(self.genes_file_path, "r") as gene_file:
             genes = csv.reader(gene_file, delimiter='\t')
@@ -62,7 +61,7 @@ class FilterSC(object):
 
     def create_train_data(self):
         split_share = 0.2
-        samples = 200 # self.sc_data.shape[0]
+        samples = 20 # self.sc_data.shape[0]
         dimensions = self.sc_data.shape[1]
         n_split = int(split_share * samples)
 
