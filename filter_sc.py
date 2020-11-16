@@ -69,7 +69,7 @@ class FilterSC(object):
 
     def create_train_data(self):
         split_share = 0.2
-        samples = 200 # self.sc_data.shape[0]
+        samples = 100 # self.sc_data.shape[0]
         dimensions = self.sc_data.shape[1]
         n_split = int(split_share * samples)
 
@@ -77,6 +77,9 @@ class FilterSC(object):
 
         train_data = np.zeros((samples - n_split, dimensions))
         test_data = np.zeros((n_split, dimensions))
+
+        sc_train_data = self.sc_data[n_split:]
+        sc_test_data = self.sc_data[:n_split]
 
         j = 0
         k = 0
@@ -93,8 +96,11 @@ class FilterSC(object):
                 k += 1
         print("train data size: ({0}, {1})".format(train_data.shape[0], train_data.shape[1]))
         print("test data size: ({0}, {1})".format(test_data.shape[0], test_data.shape[1]))
+        
+        print("sc train data size: ({0}, {1})".format(sc_train_data.shape[0], sc_train_data.shape[1]))
+        print("sc test data size: ({0}, {1})".format(sc_test_data.shape[0], sc_test_data.shape[1]))
 
-        return train_data, test_data
+        return train_data, test_data, sc_train_data, sc_test_data
 
         '''def __process_line(self, line):
         
