@@ -57,7 +57,6 @@ class SCVisualise(object):
         #sc_ann_data.obs_names = np.repeat('fake', sc_ann_data.shape[0])
         #sc_ann_data.obs_names_make_unique()
 
-
         #sc.pl.umap(anndata_clustered, color=['leiden', 'CST3', 'NKG7'])
         # pre-processing
         #sc.pp.recipe_zheng17(clustered)
@@ -75,7 +74,7 @@ class SCVisualise(object):
         
         ann_data = clustering_data.copy()
 
-        sc.pp.neighbors(ann_data, n_neighbors=50, n_pcs=0, use_rep='X')
+        sc.pp.neighbors(ann_data, n_neighbors=50, n_pcs=0, knn=False, use_rep='X', method='gauss')
 
         sc.tl.umap(ann_data)
 
