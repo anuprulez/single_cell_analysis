@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import numpy as np
 import autoencoder
@@ -24,7 +25,10 @@ class SCA(object):
         
     def train_ae(self, input_data, test_data, sc_train_data, sc_test_data):
         i_shape = input_data.shape[1]
+        s_time = time.time()
         ae = autoencoder.SCAutoEncoder(input_dim=i_shape).train_model(input_data, test_data, sc_train_data, sc_test_data)
+        e_time = time.time()
+        print("Training and prediction finished in {} seconds".format(int(e_time - s_time)))
 
 if __name__ == "__main__":
 

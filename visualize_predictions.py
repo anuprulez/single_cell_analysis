@@ -48,9 +48,9 @@ class SCVisualise(object):
         sc_ann_data.obs_names = sc_test_data_copy.obs_names
         sc_ann_data.obsm = sc_test_data_copy.obsm
 
-        self.plot_clustering(sc_test_data_copy, "Clustering with original data")
+        self.plot_clustering(sc_test_data_copy, "Clustering with original test data")
 
-        self.plot_clustering(sc_ann_data, "Clustering with low-dimensional data")
+        self.plot_clustering(sc_ann_data, "Clustering with low-dimensional test data")
 
         #print(sc_ann_data.obs_names)
         #sc_ann_data.obs_names = 
@@ -69,16 +69,20 @@ class SCVisualise(object):
         #sc.pl.louvain(anndata_clustered)
         
     def plot_clustering(self, clustering_data, title="Clustering"):
+    
+        file_path = "figures/{}.pdf".format(title)
+        print(file_path)
+        
         ann_data = clustering_data.copy()
 
-        sc.pp.neighbors(ann_data, n_neighbors=3, n_pcs=5, use_rep='X')
+        sc.pp.neighbors(ann_data, n_neighbors=50, n_pcs=0, use_rep='X')
 
         sc.tl.umap(ann_data)
-         
-        sc.tl.leiden(ann_data, key_added='clusters', resolution=1.0)
 
+        sc.tl.leiden(ann_data, key_added='clusters', resolution=1.0)
+ 
         sc.pl.umap(ann_data, color='clusters', add_outline=False, legend_loc='on data',
-           legend_fontsize=8, legend_fontoutline=2, frameon=False, title=title)
+           legend_fontsize=8, legend_fontoutline=2, frameon=False, title=title, save=title)
 
 
 
