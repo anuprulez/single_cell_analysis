@@ -69,7 +69,7 @@ class FilterSC(object):
 
     def create_train_data(self):
         split_share = 0.2
-        samples = 100 # self.sc_data.shape[0]
+        samples = 1000 # self.sc_data.shape[0]
         dimensions = self.sc_data.shape[1]
         n_split = int(split_share * samples)
 

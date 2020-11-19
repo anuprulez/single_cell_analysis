@@ -39,8 +39,9 @@ class SCVisualise(object):
         plt.show()
 
     def clustering(self, low_dim_cells):
-        sc_test_data = sc.read("data/sc_test_file.h5ad")
+        sc_test_data = sc.read("data/sc_test_file_bu.h5ad")
         sc_test_data_copy = sc_test_data.copy()
+
         sp_low_dim_cells = sp_sparse.csr_matrix(low_dim_cells)
 
         sc_ann_data = sc.AnnData(sp_low_dim_cells)
@@ -48,7 +49,7 @@ class SCVisualise(object):
         sc_ann_data.obs_names = sc_test_data_copy.obs_names
         sc_ann_data.obsm = sc_test_data_copy.obsm
 
-        self.plot_clustering(sc_test_data_copy, "Clustering with original test data")
+        #self.plot_clustering(sc_test_data_copy, "Clustering with original test data")
 
         self.plot_clustering(sc_ann_data, "Clustering with low-dimensional test data")
 
@@ -69,12 +70,11 @@ class SCVisualise(object):
         
     def plot_clustering(self, clustering_data, title="Clustering"):
     
-        file_path = "figures/{}.pdf".format(title)
-        print(file_path)
+        print("Generating figure at figures/{}.pdf".format(title))
         
         ann_data = clustering_data.copy()
 
-        sc.pp.neighbors(ann_data, n_neighbors=50, n_pcs=0, knn=False, use_rep='X', method='gauss')
+        sc.pp.neighbors(ann_data, n_neighbors=50, n_pcs=0, use_rep='X')
 
         sc.tl.umap(ann_data)
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     scVis = SCVisualise()
 
-    data = scVis.get_features("data/output.csv")
+    data = scVis.get_features("data/output_bu.csv")
     
     scVis.clustering(data)
     

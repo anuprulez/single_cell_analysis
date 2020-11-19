@@ -16,9 +16,9 @@ torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 
 batch_size = 32
-epochs = 10
+epochs = 2
 learning_rate = 1e-4
-bottleneck_size = 2
+bottleneck_size = 64
 encoder_output_size = 512
 decoder_output_size = 512
 
@@ -37,7 +37,7 @@ class Encoder(nn.Module):
         self.relu = nn.ReLU(True)
         self.encoder_h1 = nn.Linear(encoder_output_size, 256).to(DEVICE)
         self.encoder_h2 = nn.Linear(256, 128).to(DEVICE)
-        self.bottleneck_layer = nn.Linear(128, 64).to(DEVICE)
+        self.bottleneck_layer = nn.Linear(128, bottleneck_size).to(DEVICE)
 
     def forward(self, x):
         x = x.to(DEVICE)
@@ -60,7 +60,7 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
 
         self.input_dim = input_dimensions
-        self.bottleneck_layer = nn.Linear(in_features=64, out_features=128)
+        self.bottleneck_layer = nn.Linear(in_features=bottleneck_size, out_features=128)
         self.relu = nn.ReLU(True)
         self.decoder_h1 = nn.Linear(128, 256)
         self.decoder_h2 = nn.Linear(256, 512)
@@ -107,7 +107,7 @@ class SCAutoEncoder(nn.Module):
             loss = 0
             for batch_features in dataloader:
                 optimizer.zero_grad()
-                batch_features = batch_features.to(DEVICE)
+                batch_features = batch_features.to("cpu")
                 outputs = model(batch_features).to(DEVICE)
                 outputs = outputs.to(DEVICE)
                 train_loss = criterion(outputs, batch_features).to(DEVICE)
@@ -121,4 +121,4 @@ class SCAutoEncoder(nn.Module):
         sc_pp = post_processing.SCPostProcessing(sc_te_data, output_file="data/output.csv", sc_test_file="data/sc_test_file.h5ad")
         for te_d in test_loader:
             p_data = self.encoder.forward(torch.tensor(np.array(te_d)).to(DEVICE))
-            sc_pp.save_results(p_data.detach().tolist())
+            #sc_pp.save_results(p_data.detach().tolist())
