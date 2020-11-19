@@ -17,7 +17,7 @@ torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 
 batch_size = 32
-num_epochs = 1
+num_epochs = 3
 learning_rate = 0.0002
 z_dim = 128
 beta1 = 0.5
@@ -181,7 +181,7 @@ class GAN(object):
                 # Save Losses for plotting later
                 G_losses.append(errG.item())
                 D_losses.append(errD.item())
-
+                
             # Check how the generator is doing by saving G's output on fixed_noise
             '''if (iters % 500 == 0) or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
                 with torch.no_grad():
@@ -189,7 +189,9 @@ class GAN(object):
                 img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
 
             iters += 1'''
-        plot_losses(G_losses, D_losses)
+        np.savetxt("data/G_lossex.txt", G_losses)
+        np.savetxt("data/D_losses.txt", D_losses)
+        self.plot_losses(G_losses, D_losses)
             
     def plot_losses(self, G_losses, D_losses):
         plt.figure(figsize=(10, 5))
